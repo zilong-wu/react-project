@@ -3,6 +3,7 @@
 */
 import { lazy } from "react";
 
+// 组件懒加载
 const Admin = () => lazy(() => import("@pages/Admin"));
 const User = () => lazy(() => import("@pages/Acl/User"));
 const AddOrUpdateUser = () =>
@@ -19,6 +20,8 @@ const Chapter = () => lazy(() => import("@pages/Edu/Chapter"));
 const Comment = () => lazy(() => import("@pages/Edu/Comment"));
 const Course = () => lazy(() => import("@pages/Edu/Course"));
 const Teacher = () => lazy(() => import("@pages/Edu/Teacher"));
+const Subject = () => lazy(() => import("@pages/Edu/Subject"));
+const Test = () => lazy(() => import("@pages/Edu/Test")); // 测试
 const Settings = () => lazy(() => import("@pages/User/Settings"));
 const Center = () => lazy(() => import("@pages/User/Center"));
 
@@ -37,4 +40,6 @@ export default {
   Teacher,
   Settings,
   Center,
+  Subject,
+  Test
 };

@@ -1,3 +1,4 @@
+// 配置重写文件
 const {
   override,
   fixBabelImports,
@@ -8,7 +9,7 @@ const {
 
 const { resolve } = require("path");
 
-function resolvePath(path) {
+function resolvePath (path) {
   return resolve(__dirname, "src", path);
 }
 
