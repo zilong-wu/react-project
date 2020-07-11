@@ -8,12 +8,14 @@
     "@testing-library/react": "^9.3.2",
     "@testing-library/user-event": "^7.1.2",
     "antd": "^4.1.0",
+    "apidoc": "^0.23.0",
     "axios": "^0.19.2",
     "bizcharts": "^3.5.8",
     "bizcharts-plugin-slider": "^3.0.1",
     "dayjs": "^1.8.23",
     "mockjs": "^1.1.0",
     "nprogress": "^0.2.0",
+    "pm2": "^4.4.0",
     "react": "^16.13.0",
     "react-dom": "^16.13.0",
     "react-redux": "^7.2.0",
@@ -55,5 +57,5 @@
     "react-app-rewired": "^2.1.5",
     "redux-devtools-extension": "^2.13.8"
   },
-  "proxy": "http://47.103.203.152"
+  "proxy": "http://localhost:5000/"
 }
