@@ -53,7 +53,7 @@ class Chapter extends Component {
     });
   };
 
-  componentDidMount() {
+  componentDidMount () {
     // const { page, limit } = this.state;
     // this.handleTableChange(page, limit);
   }
@@ -90,7 +90,7 @@ class Chapter extends Component {
     });
   };
 
-  render() {
+  render () {
     const { previewVisible, previewImage, selectedRowKeys } = this.state;
 
     const columns = [

@@ -1,9 +1,13 @@
 import subjectList from "./reducers";
 import {
-  getSubjectList
+  getSubjectList,
+  getSecSubjectList,
+  updateSubject
 } from "./actions"
 
 export {
   subjectList,
-  getSubjectList
+  getSubjectList,
+  getSecSubjectList,
+  updateSubject
 }

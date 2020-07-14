@@ -7,12 +7,56 @@ const BASE_URL = "/admin/edu/subject";
 // 这里有主机名，就不会和proxy拼接了
 // const MOCK_URL = `http://localhost:8888${BASE_URL}`
 
-// 获取课程分类
+// 获取一级课程分类
 export function reqGetSubjectList (page, limit) {
   // request返回一个promise
   return request({
     // url: `${MOCK_URL}/${page}/${limit}`,
     url: `${BASE_URL}/${page}/${limit}`,
     method: "GET",
+  })
+}
+
+// 获取二级课程分类
+export function reqGetSecSubjectList (parentId) {
+  // request返回一个promise
+  return request({
+    // admin/edu/subject/get/:parentId
+    url: `${BASE_URL}/get/${parentId}`,
+    method: "GET"
+  })
+}
+
+// 添加课程分类
+export function reqAddSubjectList (title, parentId) {
+  // console.log(title, parentId)
+  return request({
+    url: `${BASE_URL}/save`,
+    method: "POST",
+    data: {
+      title,
+      parentId
+    }
+  })
+}
+
+// 获取更新课程分类
+// /admin/edu/subject/update
+export function reqUpdateSubjectList (title, id) {
+  return request({
+    url: `${BASE_URL}/update`,
+    method: 'PUT',
+    data: {
+      title,
+      id
+    }
+  })
+}
+
+// 删除课程分类管理title的数据
+export function reqDelSubject (id) {
+  return request({
+    url: `${BASE_URL}/remove/${id}`,
+    method: 'DELETE'
   })
 }
