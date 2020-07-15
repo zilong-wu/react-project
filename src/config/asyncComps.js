@@ -17,6 +17,8 @@ const AssignRole = () =>
 const AddOrUpdateRole = () =>
   lazy(() => import("@pages/Acl/Role/components/AddOrUpdateRole"));
 const Chapter = () => lazy(() => import("@pages/Edu/Chapter"));
+// 添加课时
+const AddLesson = () => lazy(() => import("@pages/Edu/Chapter/components/AddLesson"));
 const Comment = () => lazy(() => import("@pages/Edu/Comment"));
 const Course = () => lazy(() => import("@pages/Edu/Course"));
 const Teacher = () => lazy(() => import("@pages/Edu/Teacher"));
@@ -44,5 +46,6 @@ export default {
   Center,
   Subject,
   Test,
-  AddSubject
+  AddSubject,
+  AddLesson
 };

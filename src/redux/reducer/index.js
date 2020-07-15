@@ -9,6 +9,8 @@ import { roleList } from "@pages/Acl/Role/redux";
 import { menuList } from "@pages/Acl/Permission/redux";
 // 添加课程分类管理的reducer
 import { subjectList } from '@pages/Edu/Subject/redux'
+// 增加
+import { chapterList } from '@pages/Edu/Chapter/redux'
 
 export default combineReducers({
   loading,
@@ -17,5 +19,6 @@ export default combineReducers({
   userList,
   roleList,
   menuList,
-  subjectList
+  subjectList,
+  chapterList
 });

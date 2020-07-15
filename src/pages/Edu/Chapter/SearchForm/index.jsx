@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { Form, Select, Button } from "antd";
+import { Form, Select, Button, message } from "antd"
+import { connect } from 'react-redux'
 
 import { reqGetCourseList } from '@api/edu/course'
+import { getChapterList } from '../redux'
 import "./index.less";
 
 const { Option } = Select;
 
 // 注意：函数组件不可以使用修饰器语法
-function SearchForm () {
+function SearchForm (props) {
   // 定义课程列表的状态
   const [courseList, setCourseList] = useState([])
 
@@ -24,6 +26,7 @@ function SearchForm () {
     async function fetchData () {
       const res = await reqGetCourseList()
       console.log(res)
+      // 给课程列表状态赋值
       setCourseList(res)
       // 调用完，紧接着打印，是空
       // 这个地方类似于state，类似异步
@@ -32,8 +35,20 @@ function SearchForm () {
     fetchData()
   }, [])
 
+  // 根据课程获取章节列表数据
+  const handleGetChapterList = async value => {
+    // console.log(value)
+    const data = {
+      page: 1,
+      limit: 10,
+      courseId: value.courseId
+    }
+    await props.getChapterList(data)
+    message.success('课程章节列表数据获取成功')
+  }
+
   return (
-    <Form layout="inline" form={form}>
+    <Form layout="inline" form={form} onFinish={handleGetChapterList}>
       <Form.Item name="courseId" label="课程">
         <Select
           allowClear
@@ -62,4 +77,6 @@ function SearchForm () {
   );
 }
 
-export default SearchForm;
+
+
+export default connect(null, { getChapterList })(SearchForm)
