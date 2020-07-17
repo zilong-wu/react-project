@@ -183,7 +183,7 @@ class Course extends Component {
     },
   ];
 
-  componentDidMount() {
+  componentDidMount () {
     // const { page, limit } = this.state;
     // this.handleTableChange(page, limit);
   }
@@ -214,7 +214,7 @@ class Course extends Component {
       });
   };
 
-  render() {
+  render () {
     const {
       page,
       limit,

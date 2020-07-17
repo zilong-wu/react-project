@@ -25,7 +25,7 @@ function SearchForm (props) {
     // 注意: useEffect的回调函数不允许是一个异步函数,所以,在回调函数中重新定义一个异步函数
     async function fetchData () {
       const res = await reqGetCourseList()
-      console.log(res)
+      // console.log(res)
       // 给课程列表状态赋值
       setCourseList(res)
       // 调用完，紧接着打印，是空

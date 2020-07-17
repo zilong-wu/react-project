@@ -12,8 +12,10 @@ import {
 import dayjs from "dayjs";
 
 import relativeTime from "dayjs/plugin/relativeTime";
-
 import { connect } from "react-redux";
+// 导入知乎提供的视频播放组件
+import Player from 'griffith'
+
 import SearchForm from "./SearchForm";
 import { getLessonList } from './redux'
 import "./index.less";
@@ -37,21 +39,20 @@ dayjs.extend(relativeTime);
 class Chapter extends Component {
   state = {
     searchLoading: false,
-    previewVisible: false,
-    previewImage: "",
+    previewVisible: false,  // 控制Modal窗口是否展示
     selectedRowKeys: [],
-  };
+    video: ''
+  }
 
-  showImgModal = (img) => {
-    return () => {
-      this.setState({
-        previewVisible: true,
-        previewImage: img,
-      });
-    };
-  };
+  // video就是要预览视频的路径
+  showModal = video => () => {
+    this.setState({
+      previewVisible: true,
+      video
+    })
+  }
 
-  handleImgModal = () => {
+  handleModal = () => {
     this.setState({
       previewVisible: false,
     });
@@ -89,16 +90,20 @@ class Chapter extends Component {
   };
 
   onSelectChange = (selectedRowKeys) => {
+    // 注意：selectedRowKeys拿到的是选中项的_id
+    // 对应哪一行的数据有很多，为什么只拿到_id
+    // 因为Table内部其实拿的是每一行数据的rowKey的值，只是我们之前指定了rowKey的值就是_id的值，所有拿到的是每一行数据的_id
+    // console.log(selectedRowKeys)
     this.setState({
       selectedRowKeys,
     });
   };
 
   //点击跳转到添加课时页面
-  handleGoAddLesson = () => {
-    this.props.history.push('/edu/chapter/addlesson')
+  handleGoAddLesson = data => () => {
+    this.props.history.push('/edu/chapter/addlesson', data)
   }
-  // 点击展开按钮
+  // 点击课时展开按钮
   handleClickExpand = (expand, record) => {
     // console.log(expand)
     if (expand) {
@@ -106,8 +111,46 @@ class Chapter extends Component {
       this.props.getLessonList(record._id)
     }
   }
+  // 点击批量删除
+  handleBatchDel = () => {
+    Modal.confirm({
+      title: '确定要删除选中的吗？',
+      onOk: () => {
+        // selectedRowKeys里面存储所有的选中的课时/章节
+        // 所有在批量删除时，需要分清哪些是课程id，哪些是章节id
+        let chapterIds = [] // 存储选中章节id
+        let lessonIds = []  // 存储选中课时id
+        // 1. 获取所有的选中id
+        const selectedRowKeys = this.state.selectedRowKeys
+        // 2. 筛选章节id剩下的就是 课时id
+        // 所有的章节数据，都存储在redux里面，拿到章节数据，然后遍历章节数据，判断selectedRowKeys哪些是章节的id取出来
+        const chapterList = this.props.chapterList.items
+        // 遍历查找章节id
+        chapterList.forEach(chapter => {
+          // 找到每-条章节的id
+          let chapterId = chapter._id
+          // 如果selectedRowKeys里面有chapterId，就返回这个id对应的下标，否则则返回-1
+          let index = selectedRowKeys.indexOf(chapterId)
+          if (index > -1) {
+            // 证明找到了，就从selectedRowKeys把这条数据切出来
+            // splice会修改原来数组，并且返回切割的新数组
+            chapterIds = [...selectedRowKeys.splice(index, 1), ...chapterIds]
+          }
+        })
+        lessonIds = [...selectedRowKeys]
+        // console.log(chapterIds);
+        // console.log(selectedRowKeys);
+
+        // 定义异步接口，定义redux里面
+
+
+      }
+    })
+  }
+
+
   render () {
-    const { previewVisible, previewImage, selectedRowKeys } = this.state;
+    const { previewVisible, selectedRowKeys } = this.state;
 
     const columns = [
       {
@@ -117,30 +160,44 @@ class Chapter extends Component {
       {
         title: "是否免费",
         dataIndex: "free",
-        render: (isFree) => {
+        // 注意：如果没有写dataIndex,render函数接收到这一行的数据
+        // 如果写了，render函数接收这一数据中对应datatIndex中那个属性的值
+        render: isFree => {
+          // console.log(isFree)
+          // 这行代码实现 章节不显示是否免费，只有课时才显示
           return isFree === true ? "是" : isFree === false ? "否" : "";
         },
+      },
+      {
+        title: '视频',
+        // 逻辑：如果是章节则不展示任何内容
+        // 如果是课时，则判断是否免费，是则显示预览按钮
+        render: (value) => {
+          // console.log(value)
+          if (!value.free) return
+          return <Button onClick={this.showModal(value.video)}>预览</Button>
+        }
       },
       {
         title: "操作",
         width: 300,
         fixed: "right",
-        render: (data) => {
+        render: data => {
           // if ("free" in data) {
           return (
             <div>
-              <Tooltip title="新增课时">
-                <Button type="primary" onClick={this.handleGoAddLesson}>
+              {data.free === undefined && (<Tooltip title="新增课时">
+                <Button type="primary" style={{ marginRight: "10px" }} onClick={this.handleGoAddLesson(data)}>
                   <PlusOutlined />
                 </Button>
-              </Tooltip>
-              <Tooltip title="更新章节">
-                <Button type="primary" style={{ margin: "0 10px" }}>
+              </Tooltip>)}
+              <Tooltip title={data.free === undefined ? "更新章节" : "更新课时"}>
+                <Button type="primary">
                   <FormOutlined />
                 </Button>
               </Tooltip>
-              <Tooltip title="删除章节">
-                <Button type="danger">
+              <Tooltip title={data.free === undefined ? "删除章节" : "删除课时"}>
+                <Button type="danger" style={{ marginLeft: "10px" }}>
                   <DeleteOutlined />
                 </Button>
               </Tooltip>
@@ -149,11 +206,30 @@ class Chapter extends Component {
           // }
         },
       },
-    ];
+    ]
 
+    // 定义视频源， 放在render里面 当状态数据变化会执行render。 如果不放在render则是创建的时候执行一次。
+    // 这个sources的路径 需要改变 so放在render里面
+    const sources = {
+      // 高清     sd：标清
+      hd: {
+        // 视频地址
+        play_url: this.state.video,
+        // 视频属性：乱写的  由于这个包把这些属性定义为必须的，不写则报警告
+        bitrate: 1,
+        duration: 1000,
+        format: '',
+        height: 500,
+        size: 160000,
+        width: 500
+      }
+    }
+
+    // 为什么把onChange这个方法卸载rowSelection，因为在Table比较复杂，未来我们在写onChange的时候可能会有很多个，所有他用了不一样的语法，把选中对象的onChange放在选中对象中
     const rowSelection = {
       selectedRowKeys,
       onChange: this.onSelectChange,
+      //#region 
       // hideDefaultSelections: true,
       // selections: [
       //   Table.SELECTION_ALL,
@@ -187,7 +263,8 @@ class Chapter extends Component {
       //     }
       //   }
       // ]
-    };
+      //#endregion
+    }
 
     return (
       <div>
@@ -202,7 +279,11 @@ class Chapter extends Component {
                 <PlusOutlined />
                 <span>新增</span>
               </Button>
-              <Button type="danger" style={{ marginRight: 10 }}>
+              <Button
+                type="danger"
+                style={{ marginRight: 10 }}
+                onClick={this.handleBatchDel}
+              >
                 <span>批量删除</span>
               </Button>
               <Tooltip title="全屏" className="course-table-btn">
@@ -233,18 +314,27 @@ class Chapter extends Component {
             columns={columns}
             dataSource={this.props.chapterList.items}
             rowKey="_id"
+            // 点击展开按钮
             expandable={{
               onExpand: this.handleClickExpand
             }}
           />
         </div>
-
+        {/* ant-desgin对话框组件, 预览功能在其实现 */}
         <Modal
+          title='视频'
           visible={previewVisible}
+          // 点击Modal的关闭按钮（右上角的X），触发
+          onCancel={this.handleModal}
           footer={null}
-          onCancel={this.handleImgModal}
+          destroyOnClose={true} //关闭modal销毁modal子元素
         >
-          <img alt="example" style={{ width: "100%" }} src={previewImage} />
+          <Player
+            sources={sources}   // 必须有，定于预览视频的路径，多个视频源
+            id={'1'}
+            cover={'http://localhost:3000/logo512.png'}   // 视频封面
+            duration={1000}
+          ></Player>
         </Modal>
       </div>
     );

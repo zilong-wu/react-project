@@ -60,3 +60,11 @@ export function reqDelSubject (id) {
     method: 'DELETE'
   })
 }
+
+// 获取所有的一级课程分类数据
+export function reqAllSubjectList () {
+  return request({
+    url: `${BASE_URL}`,
+    method: 'GET'
+  })
+}

@@ -6,6 +6,8 @@ import { Card, Button, Form, Input, message, Switch } from 'antd'
 import { ArrowLeftOutlined } from '@ant-design/icons'
 import MyUpload from '../MyUpload'
 
+import { reqAddLesson } from '@api/edu/lesson'
+
 // 导入样式
 import './index.less'
 
@@ -23,10 +25,15 @@ const layout = {
 }
 
 class AddLesson extends Component {
-
   // 点击添加按钮,表单校验成功之后的回调函数
-  onFinish = values => {
-
+  onFinish = async values => {
+    // console.log(values)
+    // 发送请求添加课时
+    // 问题：如何获取chapterId
+    const chapterId = this.props.location.state._id
+    await reqAddLesson({ ...values, chapterId })
+    message.success('添加成功')
+    this.props.history.push('/edu/chapter/list')
   }
   render () {
     return (
@@ -45,7 +52,8 @@ class AddLesson extends Component {
           onFinish={this.onFinish}
           initialValues={{
             // 键就是表单项的name属性的值
-            free: true
+            free: true,
+            // lesson: '(❤ ω ❤)'
           }}
         >
           {/* form表单中每一个表单项都需要使用Form.Item包裹 */}
@@ -53,7 +61,7 @@ class AddLesson extends Component {
             // 表示提示文字
             label='课时名称'
             // 表单项提交时的属性
-            name='lesson'
+            name='title'
             // 校验规则
             rules={[
               {
@@ -94,6 +102,7 @@ class AddLesson extends Component {
               }
             ]}
           >
+            {/* 封装上传视频组件 */}
             <MyUpload></MyUpload>
           </Form.Item>
 
