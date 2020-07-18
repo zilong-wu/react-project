@@ -1,0 +1,1 @@
+export const COURSE_LIMIT_LEST = 'COURSE_LIMIT_LEST'

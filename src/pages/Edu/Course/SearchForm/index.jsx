@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Form, Input, Select, Cascader, Button } from "antd";
 import { reqGetAllTeacherList } from '@api/edu/teacher' // 获取全部讲师列表
-import { reqAllSubjectList } from '@api/edu/subject'  // 获取所有一级分类课程
+import { reqAllSubjectList, reqGetSecSubjectList } from '@api/edu/subject'  // 获取所有一级/二级分类课程
 import "./index.less";
 
 const { Option } = Select;
@@ -28,61 +28,102 @@ function SearchForm () {
 
       // console.log(teachers)
 
+      // 由于使用了cascarder组件，我们需要将subjectList的数据结构，改成cascader组件要求的数据结构
+      const options = subjectList.map(subject => {
+        return {
+          value: subject._id,
+          label: subject.title,
+          isLeaf: false   // false表示有子数据
+        }
+      })
+      // 把数据存储到subjectList
+      setSubjectList(options)
       // 把数据存储到teacherList
       setTeacherList(teachers)
-      // 把数据存储到subjectList
-      setSubjectList(subjectList)
     }
     // 手动调用
     fetchData()
   }, [])
 
-  // const [options, setOptions] = useState([
-  //   {
-  //     value: "zhejiang",
-  //     label: "Zhejiang",
-  //     isLeaf: false
-  //   },
-  //   {
-  //     value: "jiangsu",
-  //     label: "Jiangsu",
-  //     isLeaf: false
-  //   }
-  // ]);
-
-  // 由于使用了cascarder组件，我们需要将subjectList的数据结构，改成cascader组件要求的数据结构
-  const options = subjectList.map(subject => {
-    return {
-      value: subject._id,
-      label: subject.title,
-      isLeaf: false,  // false表示有子数据
-    }
-  })
-
   const onChange = (value, selectedOptions) => {
     console.log(value, selectedOptions);
   };
 
-  const loadData = selectedOptions => {
-    // const targetOption = selectedOptions[selectedOptions.length - 1];
-    // targetOption.loading = true;
+  //#region 
+  // 分析loadData
+  // const loadData = selectedOptions => {
+  //   // console.log('多级下拉', selectedOptions);
+  //   // loadData 点击一级或其他子级的时候会触发
+  //   // selectedOptions 是一个数组
+  //   // 如果点击一级菜单 selectedOptions存储的就是一个值，就是对应一级菜单数据
+  //   // 如果点击二级菜单 selectedOptions存储的就是2个值，第一个值一级菜单数据，第二个值就是二级菜单，以此类推
+  //   // 如果点击二级菜单，意味着要获取的是三级菜单数据，就需要拿二级菜单数据，根据二级菜单获取三级菜单，所以 每次获取selectedOptions中最后一条数据
+  //   const targetOption = selectedOptions[selectedOptions.length - 1]
 
-    // // load options lazily
-    // setTimeout(() => {
-    //   targetOption.loading = false;
-    //   targetOption.children = [
-    //     {
-    //       label: `${targetOption.label} Dynamic 1`,
-    //       value: "dynamic1"
-    //     },
-    //     {
-    //       label: `${targetOption.label} Dynamic 2`,
-    //       value: "dynamic2"
-    //     }
-    //   ];
-    //   setOptions([...options]);
-    // }, 1000);
-  };
+  //   // Cascader组件底层实现了正在加载
+  //   targetOption.loading = true;  // 显示小圆圈
+
+  //   // 未来要真正发送异步请求获取二级分类列表数据
+  //   // const secSubject = await reqGetSecSubjectList()
+  //   // 小圆圈消失
+  //   targetOption.loading = false;
+
+  //   // 给当前级数的菜单添加子级数据
+  //   targetOption.children = [
+  //     {
+  //       label: `${targetOption.label} Dynamic 1`,
+  //       value: "dynamic1",
+  //       // 如果子级数据后面还有子级数据，就加上isLeaf
+  //       isLeaf: false
+  //     },
+  //     {
+  //       label: `${targetOption.label} Dynamic 2`,
+  //       value: "dynamic2",
+  //       isLeaf: false
+  //     }
+  //   ];
+  //   // 修改targetOption实际就是修改subjectList里面的数据，所以直接调用setSubjectList让数据更新，视图重新渲染
+  //   setSubjectList([...subjectList]);
+
+  // }
+  //#endregion
+
+  const loadData = async selectedOptions => {
+    const targetOption = selectedOptions[selectedOptions.length - 1]
+
+    targetOption.loading = true;  // 显示小圆圈
+
+    // 异步请求 获取二级分类列表数据
+    let secSubject = await reqGetSecSubjectList(targetOption.value)
+
+    // 如果一级菜单下面没有二级数据，那么就不需要给一级数据的children属性赋值了
+
+
+    // 由于Cascader组件，对渲染的数据有格式要求，所以必须将二级分类数据，进行重构
+    secSubject = secSubject.items.map(item => {
+      return {
+        value: item._id,
+        label: item.title
+      }
+    })
+    // 小圆圈消失
+    targetOption.loading = false;
+
+    // 如果一级菜单数据没有二级数据，那么点击一级，每一次会去请求二级，就不能被选中了
+    // 如果要选中，就要在获取二级数据之后，判断是否有二级数据，有就添加children属性，没有就给一级数据的isLeaf赋值为true
+
+
+    // 给当前级数的菜单添加子级数据
+    if (secSubject.length) {
+      targetOption.children = secSubject
+    } else {
+      targetOption.isLeaf = true
+    }
+
+
+    setSubjectList([...subjectList]);
+
+  }
 
   const resetForm = () => {
     form.resetFields();
@@ -106,7 +147,7 @@ function SearchForm () {
       <Form.Item name="subject" label="分类">
         <Cascader
           style={{ width: 250, marginRight: 20 }}
-          options={options} // 多级菜单数据
+          options={subjectList} // 多级菜单数据
           loadData={loadData} // 用于动态加载选项（点击某个option，触发loadData，可在里面获取下一级数据）
           onChange={onChange} // 选择完成后的回调
           changeOnSelect  // 为true时，点击每级菜单选项值都会触发onChange

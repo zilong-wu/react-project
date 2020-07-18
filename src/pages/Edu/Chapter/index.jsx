@@ -15,9 +15,11 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import { connect } from "react-redux";
 // 导入知乎提供的视频播放组件
 import Player from 'griffith'
+// 导入全屏的包
+import screenfull from 'screenfull'
 
 import SearchForm from "./SearchForm";
-import { getLessonList } from './redux'
+import { getLessonList, batchDelChapter, batchDelLesson } from './redux'
 import "./index.less";
 
 dayjs.extend(relativeTime);
@@ -32,7 +34,7 @@ dayjs.extend(relativeTime);
     //   "Course"
     // )
   }),
-  { getLessonList }
+  { getLessonList, batchDelChapter, batchDelLesson }
 
   // { getcourseList }
 )
@@ -115,7 +117,7 @@ class Chapter extends Component {
   handleBatchDel = () => {
     Modal.confirm({
       title: '确定要删除选中的吗？',
-      onOk: () => {
+      onOk: async () => {
         // selectedRowKeys里面存储所有的选中的课时/章节
         // 所有在批量删除时，需要分清哪些是课程id，哪些是章节id
         let chapterIds = [] // 存储选中章节id
@@ -142,10 +144,17 @@ class Chapter extends Component {
         // console.log(selectedRowKeys);
 
         // 定义异步接口，定义redux里面
-
-
+        await this.props.batchDelChapter(chapterIds)
+        await this.props.batchDelLesson(lessonIds)
+        message.success('批量删除成功')
       }
     })
+  }
+
+  // 让整个页面全屏
+  handleScreenFull = () => {
+    // screenfull.request()
+    screenfull.toggle()
   }
 
 
@@ -286,7 +295,7 @@ class Chapter extends Component {
               >
                 <span>批量删除</span>
               </Button>
-              <Tooltip title="全屏" className="course-table-btn">
+              <Tooltip title="全屏" className="course-table-btn" onClick={this.handleScreenFull}>
                 <FullscreenOutlined />
               </Tooltip>
               <Tooltip title="刷新" className="course-table-btn">
@@ -341,4 +350,4 @@ class Chapter extends Component {
   }
 }
 
-export default Chapter;
+export default Chapter

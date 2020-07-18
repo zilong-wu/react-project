@@ -11,3 +11,14 @@ export function reqGetCourseList () {
   })
 }
 
+// 获取课程分页列表
+export function reqGetCourseLimitList ({ page, limit, teacherId, subjectId, subjectParentId, title }) {
+  return request({
+    url: `${BASE_URL}/${page}/${limit}`,
+    method: 'GET',
+    params: {
+      page, limit, teacherId, subjectId, subjectParentId, title
+    }
+  })
+}
+
