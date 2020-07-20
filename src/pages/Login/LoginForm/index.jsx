@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Form, Input, Button, Checkbox, Row, Col, Tabs } from "antd";
+import { Form, Input, Button, Checkbox, Row, Col, Tabs, message } from "antd";
 import {
   UserOutlined,
   LockOutlined,
@@ -39,7 +39,28 @@ class LoginForm extends Component {
     // });
   };
 
-  render() {
+  validator = (rule, value) => {
+    return new Promise((resolve, reject) => {
+      if (!value) {
+        return reject('必填项')
+      }
+      if (value.length < 4) {
+        return reject('至少四个字')
+      }
+      if (value.length > 16) {
+        return reject('最多16个字')
+      }
+      if (value.length < 4) {
+        return reject('至少四个字')
+      }
+      if (!/^[a-zA-Z0-9_]+$.text(value)/) {
+        return reject('只能写数字，字母，下划线')
+      }
+      return resolve()
+    })
+  }
+
+  render () {
     return (
       <>
         <Form
@@ -53,13 +74,39 @@ class LoginForm extends Component {
             tabBarStyle={{ display: "flex", justifyContent: "center" }}
           >
             <TabPane tab="账户密码登陆" key="user">
-              <Form.Item name="username">
+              <Form.Item name="username" rules={
+                [
+                  {
+                    require: true,
+                    message: "必填项"
+                  },
+                  {
+                    min: 4,
+                    message: '至少4个字'
+                  },
+                  {
+                    max: 16,
+                    message: '最多16个字'
+                  },
+                  {
+                    pattern: /^[a-zA-Z0-9_]+$/,
+                    message: '只能是字母，数字，下划线'
+                  }
+                ]
+              }>
                 <Input
                   prefix={<UserOutlined className="form-icon" />}
                   placeholder="用户名: admin"
                 />
               </Form.Item>
-              <Form.Item name="password">
+              <Form.Item
+                name="password"
+                // 规则
+                rules={
+                  [
+                    { validator: this.validator }
+                  ]
+                }>
                 <Input
                   prefix={<LockOutlined className="form-icon" />}
                   type="password"
